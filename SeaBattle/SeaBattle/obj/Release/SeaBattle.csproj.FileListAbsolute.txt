@@ -1,0 +1,7 @@
+c:\Users\stask\source\С#\SeaBattle\SeaBattle\bin\Release\SeaBattle.exe.config
+c:\Users\stask\source\С#\SeaBattle\SeaBattle\bin\Release\SeaBattle.exe
+c:\Users\stask\source\С#\SeaBattle\SeaBattle\bin\Release\SeaBattle.pdb
+c:\Users\stask\source\С#\SeaBattle\SeaBattle\obj\Release\SeaBattle.csprojAssemblyReference.cache
+c:\Users\stask\source\С#\SeaBattle\SeaBattle\obj\Release\SeaBattle.csproj.CoreCompileInputs.cache
+c:\Users\stask\source\С#\SeaBattle\SeaBattle\obj\Release\SeaBattle.exe
+c:\Users\stask\source\С#\SeaBattle\SeaBattle\obj\Release\SeaBattle.pdb
