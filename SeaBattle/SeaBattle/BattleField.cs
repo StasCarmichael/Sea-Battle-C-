@@ -10,6 +10,8 @@ namespace SeaBattle
 
     enum eOptionShots { missed = -1, repeatShot = 0, hit = 1, win = 2, destruction = 3 };
 
+    enum eStatus { reserved = -1, empty = 0, shooted = 1, destroyed = 2 };
+
 
     class BattleField
     {
@@ -46,6 +48,10 @@ namespace SeaBattle
         //information about the coordinates of the shots
         private bool[,] myShot;
 
+        //information about the ALL coordinates
+        private int[,] myField;
+        private int[,] enemyField;
+
 
         //information about the coordinates of the ship
         private BaseShip[] ships;
@@ -77,9 +83,10 @@ namespace SeaBattle
             countOfMoves = 0;
 
             //initialize array
-            reserved = new bool[10, 10];
-            myShot = new bool[10, 10];
-
+            reserved = new bool[SizeX, SizeY];
+            myShot = new bool[SizeX, SizeY];
+            myField = new int[SizeX, SizeY];
+            enemyField = new int[SizeX, SizeY];
         }
 
 
@@ -89,49 +96,34 @@ namespace SeaBattle
         //Рисуем попадания по нам + наши все корабли включая вибитии
         public void Draw(BattleField bot, int startX, int startY)
         {
+            AddFullOnMyMatrix(bot);
 
-            // Живие коробли
-            Console.BackgroundColor = ConsoleColor.Green;
-            Console.ForegroundColor = ConsoleColor.Black;
-            for (int ship = 0; ship < ships.Length; ship++)
-            {
-                for (int deck = 0; deck < ships[ship].decks.Length; deck++)
-                {
-                    Console.SetCursorPosition(2 + startX + ships[ship].decks[deck].x, 2 + ships[ship].decks[deck].y + startY);
-                    Console.Write("#");
-                }
-            }
-
-            //Попадания
-            Console.BackgroundColor = ConsoleColor.Blue;
-            Console.ForegroundColor = ConsoleColor.White;
             for (int x = 0; x < SizeX; x++)
             {
                 for (int y = 0; y < SizeY; y++)
                 {
-                    if (bot.myShot[x, y] == true)
+                    Console.SetCursorPosition(2 + startX + x, 2 + startY + y);
+                    if (myField[x, y] == (int)eStatus.destroyed)
                     {
-                        Console.SetCursorPosition(2 + startX + x, 2 + startY + y);
+                        Console.BackgroundColor = ConsoleColor.Red;
+                        Console.ForegroundColor = ConsoleColor.Black;
+                        Console.Write("X");
+                    }
+                    else if (myField[x, y] == (int)eStatus.reserved)
+                    {
+                        Console.BackgroundColor = ConsoleColor.Green;
+                        Console.ForegroundColor = ConsoleColor.Black;
+                        Console.Write("#");
+                    }
+                    else if (myField[x, y] == (int)eStatus.shooted)
+                    {
+                        Console.BackgroundColor = ConsoleColor.Blue;
+                        Console.ForegroundColor = ConsoleColor.White;
                         Console.Write(".");
                     }
                 }
             }
 
-
-            // Вибитие корабли
-            Console.BackgroundColor = ConsoleColor.Red;
-            Console.ForegroundColor = ConsoleColor.Black;
-            for (int ship = 0; ship < ships.Length; ship++)
-            {
-                for (int deck = 0; deck < ships[ship].decks.Length; deck++)
-                {
-                    if (ships[ship].decks[deck].Alive == false)
-                    {
-                        Console.SetCursorPosition(2 + startX + ships[ship].decks[deck].x, 2 + ships[ship].decks[deck].y + startY);
-                        Console.Write("X");
-                    }
-                }
-            }
 
 
             Console.ResetColor();
@@ -162,36 +154,29 @@ namespace SeaBattle
         //Рисуем наши попадания и вибитие кораблики bota
         public void DrawField(BattleField bot, int startX, int startY)
         {
+            AddFullOnEnemyMatrix(bot);
 
-            //Попадания
-            Console.BackgroundColor = ConsoleColor.Blue;
-            Console.ForegroundColor = ConsoleColor.White;
+
             for (int x = 0; x < SizeX; x++)
             {
                 for (int y = 0; y < SizeY; y++)
                 {
-                    if (myShot[x, y] == true)
+                    Console.SetCursorPosition(2 + startX + x, 2 + startY + y);
+                    if (enemyField[x, y] == (int)eStatus.destroyed)
                     {
-                        Console.SetCursorPosition(2 + startX + x, 2 + startY + y);
+                        Console.BackgroundColor = ConsoleColor.Red;
+                        Console.ForegroundColor = ConsoleColor.Black;
+                        Console.Write("X");
+                    }
+                    else if (enemyField[x, y] == (int)eStatus.shooted)
+                    {
+                        Console.BackgroundColor = ConsoleColor.Blue;
+                        Console.ForegroundColor = ConsoleColor.White;
                         Console.Write(".");
                     }
                 }
             }
 
-            // Вибитие корабли
-            Console.BackgroundColor = ConsoleColor.Red;
-            Console.ForegroundColor = ConsoleColor.Black;
-            for (int ship = 0; ship < bot.ships.Length; ship++)
-            {
-                for (int deck = 0; deck < bot.ships[ship].decks.Length; deck++)
-                {
-                    if (bot.ships[ship].decks[deck].Alive == false)
-                    {
-                        Console.SetCursorPosition(2 + startX + bot.ships[ship].decks[deck].x, 2 + bot.ships[ship].decks[deck].y + startY);
-                        Console.Write("X");
-                    }
-                }
-            }
 
 
             Console.ResetColor();
@@ -220,6 +205,7 @@ namespace SeaBattle
             Console.WriteLine("*----------*");
 
         }
+
         //For debugging draw their alieu ships
         public void DrawShips(int startX, int startY)
         {
@@ -262,7 +248,6 @@ namespace SeaBattle
             Console.WriteLine("*----------*");
 
         }
-
 
 
 
@@ -669,10 +654,79 @@ namespace SeaBattle
 
             }
 
-
         }
 
 
+        //Занести корабли на матрицу 
+        private void AddFullOnMyMatrix(BattleField bot)
+        {
+
+            // Живие коробли
+            for (int ship = 0; ship < ships.Length; ship++)
+            {
+                for (int deck = 0; deck < ships[ship].decks.Length; deck++)
+                {
+                    if (ships[ship].decks[deck].Alive == true)
+                    {
+                        myField[ships[ship].decks[deck].x, ships[ship].decks[deck].y] = (int)eStatus.reserved;
+                    }
+                }
+            }
+
+
+            //Попадания
+            for (int x = 0; x < SizeX; x++)
+            {
+                for (int y = 0; y < SizeY; y++)
+                {
+                    if (bot.myShot[x, y] == true)
+                    {
+                        myField[x, y] = (int)eStatus.shooted;
+                    }
+                }
+            }
+
+
+            // Мертвиє коробли
+            for (int ship = 0; ship < ships.Length; ship++)
+            {
+                for (int deck = 0; deck < ships[ship].decks.Length; deck++)
+                {
+                    if (ships[ship].decks[deck].Alive == false)
+                    {
+                        myField[ships[ship].decks[deck].x, ships[ship].decks[deck].y] = (int)eStatus.destroyed;
+                    }
+                }
+            }
+
+        }
+        private void AddFullOnEnemyMatrix(BattleField bot)
+        {
+            //Попадания
+            for (int x = 0; x < SizeX; x++)
+            {
+                for (int y = 0; y < SizeY; y++)
+                {
+                    if (myShot[x, y] == true)
+                    {
+                        enemyField[x,y] = (int)eStatus.shooted              ;
+                    }
+                }
+            }
+
+            // Вибитие корабли
+            for (int ship = 0; ship < bot.ships.Length; ship++)
+            {
+                for (int deck = 0; deck < bot.ships[ship].decks.Length; deck++)
+                {
+                    if (bot.ships[ship].decks[deck].Alive == false)
+                    {
+                        enemyField[bot.ships[ship].decks[deck].x, bot.ships[ship].decks[deck].y] = (int)eStatus.destroyed;
+                    }
+                }
+            }
+
+        }
 
 
 

@@ -34,7 +34,6 @@ namespace SeaBattle
             for (int i = 0; i < decks.Length; i++) { decks[i].Alive = true; }
         }
     }
-
     class ThreeDeckShip : BaseShip
     {
         public int SIZE = 3;
@@ -45,7 +44,6 @@ namespace SeaBattle
             for (int i = 0; i < decks.Length; i++) { decks[i].Alive = true; }
         }
     }
-
     class DoubleDeckShip : BaseShip
     {
         public int SIZE = 2;
@@ -56,7 +54,6 @@ namespace SeaBattle
             for (int i = 0; i < decks.Length; i++) { decks[i].Alive = true; }
         }
     }
-
     class SingleDeckShip : BaseShip
     {
         public int SIZE = 1;

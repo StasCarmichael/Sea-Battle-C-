@@ -56,7 +56,7 @@ namespace SeaBattle
                     Console.ForegroundColor = ConsoleColor.Black;
                     Console.SetCursorPosition(5, 7);
                     Console.Write("Enter data right!!! Press ENTER if you want play again .");
-                    Console.ReadLine();
+                    Console.ReadKey();
                     Console.ResetColor();
                     Console.Clear();
                 }
@@ -97,11 +97,9 @@ namespace SeaBattle
                             chuck.Draw(morgan, 5, 8);
                             chuck.DrawField(morgan, 25, 8);
 
-
                             //корабли и вистрели по моргану
                             morgan.Draw(chuck, 50, 8);
                             morgan.DrawField(chuck, 70, 8);
-
 
 
                             chuck.ShotBot(morgan);
@@ -506,7 +504,7 @@ namespace SeaBattle
                         Console.Write($"If you want to play again write  AGAIN :");
 
                         string str = Console.ReadLine();
-                        if (str == "AGAIN") { goto Again; }
+                        if (str == "AGAIN") { Console.ResetColor(); goto Again; }
 
                         Console.ResetColor();
 
@@ -574,7 +572,6 @@ namespace SeaBattle
 
             Console.ResetColor();
         }
-
         //Отрисовка интерфейса для игрока і 1 бота
         static void DrawInterfaceForOnePlayer()
         {
@@ -622,7 +619,6 @@ namespace SeaBattle
 
             Console.ResetColor();
         }
-
         // Отрисовка интерфейса для 2 игроков
         static void DrawInterfaceForTwoPlayer()
         {
@@ -673,7 +669,6 @@ namespace SeaBattle
 
 
 
-
         //Отрисовка интерфейса сводки боя
         static void DrawInterfaceBattleSummary()
         {
@@ -704,7 +699,6 @@ namespace SeaBattle
             Console.Write("Battle Summary");
             Console.ResetColor();
         }
-
 
 
 
