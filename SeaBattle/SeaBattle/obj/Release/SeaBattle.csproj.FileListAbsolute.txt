@@ -5,3 +5,10 @@ c:\Users\stask\source\С#\SeaBattle\SeaBattle\obj\Release\SeaBattle.csprojAssemb
 c:\Users\stask\source\С#\SeaBattle\SeaBattle\obj\Release\SeaBattle.csproj.CoreCompileInputs.cache
 c:\Users\stask\source\С#\SeaBattle\SeaBattle\obj\Release\SeaBattle.exe
 c:\Users\stask\source\С#\SeaBattle\SeaBattle\obj\Release\SeaBattle.pdb
+C:\Users\stask\source\repos\Sea-Battle-C--main\SeaBattle\SeaBattle\bin\Release\SeaBattle.exe.config
+C:\Users\stask\source\repos\Sea-Battle-C--main\SeaBattle\SeaBattle\bin\Release\SeaBattle.exe
+C:\Users\stask\source\repos\Sea-Battle-C--main\SeaBattle\SeaBattle\bin\Release\SeaBattle.pdb
+C:\Users\stask\source\repos\Sea-Battle-C--main\SeaBattle\SeaBattle\obj\Release\SeaBattle.csprojAssemblyReference.cache
+C:\Users\stask\source\repos\Sea-Battle-C--main\SeaBattle\SeaBattle\obj\Release\SeaBattle.csproj.CoreCompileInputs.cache
+C:\Users\stask\source\repos\Sea-Battle-C--main\SeaBattle\SeaBattle\obj\Release\SeaBattle.exe
+C:\Users\stask\source\repos\Sea-Battle-C--main\SeaBattle\SeaBattle\obj\Release\SeaBattle.pdb

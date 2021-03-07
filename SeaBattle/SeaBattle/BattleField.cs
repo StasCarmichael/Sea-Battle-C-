@@ -10,6 +10,8 @@ namespace SeaBattle
 
     enum eOptionShots { missed = -1, repeatShot = 0, hit = 1, win = 2, destruction = 3 };
 
+    enum eBotShots { missed = 0, hit = 1, destruction = 2 };
+
     enum eStatus { reserved = -1, empty = 0, shooted = 1, destroyed = 2 };
 
 
@@ -29,11 +31,15 @@ namespace SeaBattle
         {
             public bool currentShip;
 
-            public uint botComplexity;
+            public uint repeatShots;
 
             public int firstShotX;
             public int firstShotY;
 
+            public int currShotX;
+            public int currShotY;
+
+            public bool rightDirection;
             public eDirection direction;
 
             public List<eDirection> invalidDirection;
@@ -57,6 +63,10 @@ namespace SeaBattle
         private BaseShip[] ships;
 
 
+        //Bot state
+        private int botStates;
+
+
         //ctor
         public BattleField()
         {
@@ -77,7 +87,7 @@ namespace SeaBattle
 
             aI.currentShip = false;
             aI.invalidDirection = new List<eDirection>();
-            aI.botComplexity = 20000;
+            aI.repeatShots = 20000;
 
             Win = false;
             countOfMoves = 0;
@@ -87,6 +97,8 @@ namespace SeaBattle
             myShot = new bool[SizeX, SizeY];
             myField = new int[SizeX, SizeY];
             enemyField = new int[SizeX, SizeY];
+
+            botStates = (int)eBotShots.missed;
         }
 
 
@@ -252,9 +264,12 @@ namespace SeaBattle
 
 
 
-        //bot shoots another bot
-        public void ShotBot(BattleField bot)
+        //Bot shoots another bot
+        public bool ShotBot(BattleField bot , int freezeTime)
         {
+
+            System.Threading.Thread.Sleep(freezeTime);
+
 
             //Проверка на потоплений корабль
             ShipsCheck(bot);
@@ -264,117 +279,13 @@ namespace SeaBattle
 
             //Проверка на победу
             CheckForVictory(bot);
-            if (Win == true) { return; }
-
-            countOfMoves++;
+            if (Win == true) { return false; }
 
 
-        NewShot:
-
-
-            // Вистрел уже по стреляному кораблю
-            if (aI.currentShip == true)
+            if (botStates == (int)eBotShots.missed)
             {
-
-            NextDir:
-
-                //Вибор кординат и направления
-                Random myRand = new Random();
-
-                int myDir = myRand.Next(0, 4);
-
-                int tempX1 = aI.firstShotX;
-                int tempY1 = aI.firstShotY;
-
-
-                //Установка управления
-                switch (myDir)
-                {
-                    case (int)eDirection.up:
-                        aI.direction = eDirection.up;
-                        break;
-                    case (int)eDirection.down:
-                        aI.direction = eDirection.down;
-                        break;
-                    case (int)eDirection.right:
-                        aI.direction = eDirection.right;
-                        break;
-                    case (int)eDirection.left:
-                        aI.direction = eDirection.left;
-                        break;
-                }
-
-                // Проверка на направления
-                for (int i = 0; i < aI.invalidDirection.Count; i++)
-                {
-                    if (aI.direction == aI.invalidDirection[i]) { goto NextDir; }
-                }
-
-
-            //goto
-            Shot:
-
-
-                switch (aI.direction)
-                {
-                    case eDirection.up:
-                        tempY1--;
-                        break;
-                    case eDirection.down:
-                        tempY1++;
-                        break;
-                    case eDirection.right:
-                        tempX1++;
-                        break;
-                    case eDirection.left:
-                        tempX1--;
-                        break;
-                }
-
-                // Проверка на вистрел в уже стреляемоє + goto
-                if (!PointCheck(tempX1, tempY1))
-                {
-                    aI.invalidDirection.Add(aI.direction);
-                    goto NextDir;
-                }
-
-
-                // Добавления простелених кординат
-                AddUsingCoordinate(tempX1, tempY1);
-
-
-                // Проверка всех кораблей на жизнепригодность
-                ShipsCheck(bot);
-
-
-                // Вистрел
-                int currentShip = 0;
-
-                if (HitCheck(bot, tempX1, tempY1, ref currentShip))
-                {
-                    // проверка или живой корабль
-                    IsTheShipAlive(currentShip, bot);
-
-                    //Если корабль не живой
-                    if (bot.ships[currentShip].Alive == false)
-                    {
-                        aI.currentShip = false;
-                        aI.invalidDirection.Clear();
-
-                        AddShotCoordinatesShip(bot, currentShip);
-
-                        goto NewShot;
-                    }
-                    //Если живой
-                    else { goto Shot; }
-                }
-                else { aI.invalidDirection.Add(aI.direction); }
-
-            }
-
-            //Новий вистрел
-            else
-            {
+                //Подщет ходов
+                countOfMoves++;
 
                 int randomCount = 0;
 
@@ -390,11 +301,11 @@ namespace SeaBattle
                 int tempY = rand.Next(0, 10);
 
 
-                // Защита от вечного цикла + опит бота
-                if (randomCount > aI.botComplexity)
+                // Защита от вечного цикла
+                if (randomCount > aI.repeatShots)
                 {
                     WreckedShipCheck(bot);
-                    if (Win == true) { return; }
+                    if (Win == true) { return false; }
                     for (int x = 0; x < SizeX; x++)
                     {
                         for (int y = 0; y < SizeY; y++)
@@ -410,14 +321,12 @@ namespace SeaBattle
                 }
 
 
-
                 //Проверка на простреляние точки
                 if (!PointCheck(tempX, tempY)) { goto TryAgain; }
 
 
                 // Добавления елементов в постреляние точки
                 AddUsingCoordinate(tempX, tempY);
-
 
 
                 int wreckedShip = 0;
@@ -428,14 +337,11 @@ namespace SeaBattle
                     aI.firstShotX = tempX;
                     aI.firstShotY = tempY;
                 }
-                else { return; }
-
-
-                int dir = rand.Next(0, 4);
-
-
-            //goto
-            NextShot:
+                else
+                {
+                    botStates = (int)eBotShots.missed;
+                    return false;
+                }
 
 
                 // Проверка на живой корабль у бота
@@ -452,65 +358,359 @@ namespace SeaBattle
                     // Добавляем простреляние кординати
                     AddShotCoordinatesShip(bot, wreckedShip);
 
-                    // Повторяем вистрел
-                    goto TryAgain;
+
+                    botStates = (int)eBotShots.destruction;
                 }
                 //Если не потоплен
                 else
                 {
                     aI.currentShip = true;
 
-                    // Перемещаем кординати
-                    switch (dir)
+                    aI.firstShotX = tempX;
+                    aI.firstShotY = tempY;
+
+                    aI.currShotX = tempX;
+                    aI.currShotY = tempY;
+
+
+                    botStates = (int)eBotShots.hit;
+                }
+
+                return true;
+            }
+            else if(botStates == (int)eBotShots.destruction)
+            {
+                int randomCount = 0;
+
+            //goto
+            TryAgain:
+
+                randomCount++;
+
+                //Вибирае точки
+                Random rand = new Random();
+
+                int tempX = rand.Next(0, 10);
+                int tempY = rand.Next(0, 10);
+
+
+                // Защита от вечного цикла + опит бота
+                if (randomCount > aI.repeatShots)
+                {
+                    WreckedShipCheck(bot);
+                    if (Win == true) { return false; }
+                    for (int x = 0; x < SizeX; x++)
                     {
-                        case (int)eDirection.up:
+                        for (int y = 0; y < SizeY; y++)
+                        {
+                            if (CheckNegative(x, y))
+                            {
+                                tempX = x;
+                                tempY = y;
+                                randomCount = 0;
+                            }
+                        }
+                    }
+                }
+
+
+                //Проверка на простреляние точки
+                if (!PointCheck(tempX, tempY)) { goto TryAgain; }
+
+
+                // Добавления елементов в постреляние точки
+                AddUsingCoordinate(tempX, tempY);
+
+                int wreckedShip = 0;
+
+                // Проверка на попадание
+                if (HitCheck(bot, tempX, tempY, ref wreckedShip))
+                {
+                    aI.firstShotX = tempX;
+                    aI.firstShotY = tempY;
+                }
+                else 
+                {
+                    botStates = (int)eBotShots.missed;
+                    return false;
+                }
+
+
+                // Проверка на живой корабль у бота
+                IsTheShipAlive(wreckedShip, bot);
+
+
+                //Если корабль потоплен
+                if (bot.ships[wreckedShip].Alive == false)
+                {
+                    //Очищаем AI
+                    aI.currentShip = false;
+                    aI.invalidDirection.Clear();
+
+                    // Добавляем простреляние кординати
+                    AddShotCoordinatesShip(bot, wreckedShip);
+
+
+                    botStates = (int)eBotShots.destruction;
+                    return true;
+
+                }
+                //Если не потоплен
+                else
+                {
+                    aI.currentShip = true;
+
+                    aI.firstShotX = tempX;
+                    aI.firstShotY = tempY;
+
+                    aI.currShotX = tempX;
+                    aI.currShotY = tempY;
+
+
+                    botStates = (int)eBotShots.hit;
+                    return true;
+                }
+
+
+            }
+            else if (botStates == (int)eBotShots.hit)
+            {
+                if (aI.rightDirection == true)
+                {
+                    int tempX = aI.currShotX;
+                    int tempY = aI.currShotY;
+
+
+                    switch (aI.direction)
+                    {
+                        case eDirection.up:
                             tempY--;
                             break;
-                        case (int)eDirection.down:
+                        case eDirection.down:
                             tempY++;
                             break;
-                        case (int)eDirection.right:
+                        case eDirection.right:
                             tempX++;
                             break;
-                        case (int)eDirection.left:
+                        case eDirection.left:
                             tempX--;
                             break;
                     }
 
 
-                    ////////////////////////
-                    //Проверка на простреляние точки
+                    // Проверка на вистрел в уже стреляемоє + инвертация координат
                     if (!PointCheck(tempX, tempY))
                     {
-                        dir = rand.Next(0, 4);
-                        tempX = aI.firstShotX;
-                        tempY = aI.firstShotY;
+                        //Улучения ИИ
+                        aI.currShotX = aI.firstShotX;
+                        aI.currShotY = aI.firstShotY;
 
-                        goto NextShot;
+                        switch (aI.direction)
+                        {
+                            case eDirection.up:
+                                aI.direction = eDirection.down;
+                                break;
+                            case eDirection.down:
+                                aI.direction = eDirection.up;
+                                break;
+                            case eDirection.right:
+                                aI.direction = eDirection.left;
+                                break;
+                            case eDirection.left:
+                                aI.direction = eDirection.right;
+                                break;
+                        }
+
+                        botStates = (int)eBotShots.hit;
+                        return true;
                     }
 
 
-                    // Добавления пападающихся кординатов
+                    // Добавления простелених кординат
                     AddUsingCoordinate(tempX, tempY);
 
 
-                    //Проверка на попадания по даному кораблю
-                    for (int i = 0; i < bot.ships[wreckedShip].decks.Length; i++)
-                    {
-                        if (tempX == bot.ships[wreckedShip].decks[i].x && tempY == bot.ships[wreckedShip].decks[i].y)
-                        {
-                            if (bot.ships[wreckedShip].decks[i].Alive == false) { continue; }
-                            else
-                            {
-                                bot.ships[wreckedShip].decks[i].Alive = false;
+                    // Проверка всех кораблей на жизнепригодность
+                    ShipsCheck(bot);
 
-                                goto NextShot;
-                            }
+
+                    // Вистрел
+                    int currentShip = 0;
+
+                    if (HitCheck(bot, tempX, tempY, ref currentShip))
+                    {
+                        // проверка или живой корабль
+                        IsTheShipAlive(currentShip, bot);
+
+                        //Если корабль не живой
+                        if (bot.ships[currentShip].Alive == false)
+                        {
+                            aI.currentShip = false;
+                            aI.invalidDirection.Clear();
+
+                            AddShotCoordinatesShip(bot, currentShip);
+
+                            aI.rightDirection = false;
+                            botStates = (int)eBotShots.destruction;
+                            return true;
+                        }
+                        //Если живой
+                        else
+                        {
+                            aI.rightDirection = true;
+
+                            aI.currShotX = tempX;
+                            aI.currShotY = tempY;
+
+                            botStates = (int)eBotShots.hit;
+                            return true;
                         }
                     }
+                    else
+                    {
+                        //Улучения ИИ
+                        aI.currShotX = aI.firstShotX;
+                        aI.currShotY = aI.firstShotY;
+
+                        switch (aI.direction)
+                        {
+                            case eDirection.up:
+                                aI.direction = eDirection.down;
+                                break;
+                            case eDirection.down:
+                                aI.direction = eDirection.up;
+                                break;
+                            case eDirection.right:
+                                aI.direction = eDirection.left;
+                                break;
+                            case eDirection.left:
+                                aI.direction = eDirection.right;
+                                break;
+                        }
+
+                        botStates = (int)eBotShots.hit;
+                        return false;
+                    }
+                }
+                else
+                {
+
+                //goto
+                NextDir:
+
+
+                    //Вибор кординат и направления
+                    Random random = new Random();
+
+                    int myDir = random.Next(0, 4);
+
+                    int tempX = aI.firstShotX;
+                    int tempY = aI.firstShotY;
+
+
+                    //Установка управления
+                    switch (myDir)
+                    {
+                        case (int)eDirection.up:
+                            aI.direction = eDirection.up;
+                            break;
+                        case (int)eDirection.down:
+                            aI.direction = eDirection.down;
+                            break;
+                        case (int)eDirection.right:
+                            aI.direction = eDirection.right;
+                            break;
+                        case (int)eDirection.left:
+                            aI.direction = eDirection.left;
+                            break;
+                    }
+
+
+                    // Проверка на направления
+                    for (int i = 0; i < aI.invalidDirection.Count; i++)
+                    {
+                        if (aI.direction == aI.invalidDirection[i]) { goto NextDir; }
+                    }
+
+
+                    switch (aI.direction)
+                    {
+                        case eDirection.up:
+                            tempY--;
+                            break;
+                        case eDirection.down:
+                            tempY++;
+                            break;
+                        case eDirection.right:
+                            tempX++;
+                            break;
+                        case eDirection.left:
+                            tempX--;
+                            break;
+                    }
+
+
+                    // Проверка на вистрел в уже стреляемоє + goto
+                    if (!PointCheck(tempX, tempY))
+                    {
+                        aI.invalidDirection.Add(aI.direction);
+                        goto NextDir;
+                    }
+
+
+                    // Добавления простелених кординат
+                    AddUsingCoordinate(tempX, tempY);
+
+
+                    // Проверка всех кораблей на жизнепригодность
+                    ShipsCheck(bot);
+
+
+                    // Вистрел
+                    int currentShip = 0;
+
+                    if (HitCheck(bot, tempX, tempY, ref currentShip))
+                    {
+                        // проверка или живой корабль
+                        IsTheShipAlive(currentShip, bot);
+
+                        //Если корабль не живой
+                        if (bot.ships[currentShip].Alive == false)
+                        {
+                            aI.currentShip = false;
+                            aI.invalidDirection.Clear();
+
+                            AddShotCoordinatesShip(bot, currentShip);
+
+                            aI.rightDirection = false;
+                            botStates = (int)eBotShots.destruction;
+                            return true;
+                        }
+                        //Если живой
+                        else
+                        {
+                            aI.rightDirection = true;
+
+                            aI.currShotX = tempX;
+                            aI.currShotY = tempY;
+
+                            botStates = (int)eBotShots.hit;
+                            return true;
+                        }
+                    }
+                    else { aI.invalidDirection.Add(aI.direction); }
+
+
+                    botStates = (int)eBotShots.hit;
+                    return false;
+
                 }
             }
 
+
+            //На всякий случай
+            botStates = (int)eBotShots.missed;
+            return false;
         }
         // MAN shoots check eOptionShots
         public int ShotMan(BattleField bot, int x, int y)
@@ -657,6 +857,7 @@ namespace SeaBattle
         }
 
 
+
         //Занести корабли на матрицу 
         private void AddFullOnMyMatrix(BattleField bot)
         {
@@ -709,7 +910,7 @@ namespace SeaBattle
                 {
                     if (myShot[x, y] == true)
                     {
-                        enemyField[x,y] = (int)eStatus.shooted              ;
+                        enemyField[x, y] = (int)eStatus.shooted;
                     }
                 }
             }
@@ -739,6 +940,7 @@ namespace SeaBattle
             reserved[x, y] = true;
         }
 
+        //Check reserve coordinate
         private bool CheckReserveCordinate(int x, int y)
         {
             if (!(x < 10 && x >= 0 && y < 10 && y >= 0)) { return false; }

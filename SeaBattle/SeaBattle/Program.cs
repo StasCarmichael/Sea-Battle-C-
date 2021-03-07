@@ -17,6 +17,9 @@ namespace SeaBattle
             //Установка коректной консоли
             Console.SetBufferSize(120, 60);
 
+            //Установка задержки
+            const int FREEZETIME = 1000;
+
 
         //goto
         Again:
@@ -93,21 +96,57 @@ namespace SeaBattle
 
                         while (!(chuck.Win || morgan.Win))
                         {
-                            //корабли и вистрели по чаку
-                            chuck.Draw(morgan, 5, 8);
-                            chuck.DrawField(morgan, 25, 8);
 
-                            //корабли и вистрели по моргану
-                            morgan.Draw(chuck, 50, 8);
-                            morgan.DrawField(chuck, 70, 8);
+                            //Отрисовка кораблей
+                            {
+                                //корабли и вистрели по чаку
+                                chuck.Draw(morgan, 5, 8);
+                                chuck.DrawField(morgan, 25, 8);
 
+                                //корабли и вистрели по моргану
+                                morgan.Draw(chuck, 50, 8);
+                                morgan.DrawField(chuck, 70, 8);
+                            }
 
-                            chuck.ShotBot(morgan);
+                            //Вистрел Чака по Моргану
+                            while (chuck.ShotBot(morgan, FREEZETIME))
+                            {
+                                //корабли и вистрели по чаку
+                                chuck.Draw(morgan, 5, 8);
+                                chuck.DrawField(morgan, 25, 8);
+
+                                //корабли и вистрели по моргану
+                                morgan.Draw(chuck, 50, 8);
+                                morgan.DrawField(chuck, 70, 8);
+                            }
+
 
                             //Проверка на бистрий виграш
                             if (chuck.Win || morgan.Win) { break; }
 
-                            morgan.ShotBot(chuck);
+
+                            //Отрисовка кораблей
+                            {
+                                //корабли и вистрели по чаку
+                                chuck.Draw(morgan, 5, 8);
+                                chuck.DrawField(morgan, 25, 8);
+
+                                //корабли и вистрели по моргану
+                                morgan.Draw(chuck, 50, 8);
+                                morgan.DrawField(chuck, 70, 8);
+                            }
+
+                            //Вистрел Моргана по Чаку
+                            while (morgan.ShotBot(chuck, FREEZETIME))
+                            {
+                                //корабли и вистрели по чаку
+                                chuck.Draw(morgan, 5, 8);
+                                chuck.DrawField(morgan, 25, 8);
+
+                                //корабли и вистрели по моргану
+                                morgan.Draw(chuck, 50, 8);
+                                morgan.DrawField(chuck, 70, 8);
+                            }
 
 
                             //Отрисоввка номера хода
@@ -119,9 +158,6 @@ namespace SeaBattle
                                 Console.ResetColor();
                             }
 
-
-                            //System.Threading.Thread.Sleep(100);
-                            //Console.ReadLine();
                         }
 
                         //Last shot
@@ -149,11 +185,6 @@ namespace SeaBattle
                             Console.ResetColor();
                         }
 
-                        Console.BackgroundColor = ConsoleColor.Red;
-                        Console.ForegroundColor = ConsoleColor.Black;
-                        Console.Write("If you want exit press ENTER : ");
-                        Console.ReadLine();
-                        Console.ResetColor();
 
                         break;
                     }
@@ -252,6 +283,9 @@ namespace SeaBattle
 
                                 case (int)eOptionShots.missed:
                                     {
+                                        player.Draw(bot, 5, 8);
+                                        player.DrawField(bot, 35, 8);
+
                                         DrawBattleSummary("You missed");
 
                                         break;
@@ -266,7 +300,12 @@ namespace SeaBattle
 
 
                             //Вистрел бота
-                            bot.ShotBot(player);
+                            while (bot.ShotBot(player, FREEZETIME))
+                            {
+                                player.Draw(bot, 5, 8);
+                                player.DrawField(bot, 35, 8);
+                            }
+                            
 
                         }
 
@@ -282,12 +321,6 @@ namespace SeaBattle
                             else { DrawBattleSummary("YOU LOSE"); }
                         }
 
-                        Console.SetCursorPosition(0, 22);
-                        Console.BackgroundColor = ConsoleColor.Red;
-                        Console.ForegroundColor = ConsoleColor.Black;
-                        Console.Write("If you want exit press ENTER : ");
-                        Console.ReadLine();
-                        Console.ResetColor();
 
                         break;
                     }
@@ -482,15 +515,6 @@ namespace SeaBattle
                             else { DrawBattleSummary("PLAYER 2 WIN"); }
                         }
 
-
-                        Console.SetCursorPosition(0, 22);
-                        Console.BackgroundColor = ConsoleColor.Red;
-                        Console.ForegroundColor = ConsoleColor.Black;
-                        Console.Write("If you want exit press ENTER : ");
-                        Console.ReadLine();
-                        Console.ResetColor();
-
-
                         break;
                     }
 
@@ -501,7 +525,7 @@ namespace SeaBattle
                         Console.SetCursorPosition(25, 1);
                         Console.WriteLine("You made a wrong !!!");
                         Console.SetCursorPosition(15, 2);
-                        Console.Write($"If you want to play again write  AGAIN :");
+                        Console.Write($"If you want to play again write AGAIN :");
 
                         string str = Console.ReadLine();
                         if (str == "AGAIN") { Console.ResetColor(); goto Again; }
@@ -512,6 +536,14 @@ namespace SeaBattle
                     }
 
             }
+
+
+            Console.SetCursorPosition(0, 22);
+            Console.BackgroundColor = ConsoleColor.Red;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.Write("If you want exit press any key : ");
+            Console.ReadKey();
+            Console.ResetColor();
         }
 
 
