@@ -108,8 +108,10 @@ namespace SeaBattle
         //Рисуем попадания по нам + наши все корабли включая вибитии
         public void Draw(BattleField bot, int startX, int startY)
         {
+            //Записать дание в матрицу
             AddFullOnMyMatrix(bot);
 
+            //Нарисовать корабли
             for (int x = 0; x < SizeX; x++)
             {
                 for (int y = 0; y < SizeY; y++)
@@ -136,39 +138,17 @@ namespace SeaBattle
                 }
             }
 
-
-
-            Console.ResetColor();
-            // Кординати x
-            Console.SetCursorPosition(0 + startX, 0 + startY);
-            Console.Write("  ");
-            for (int i = 0; i < 10; i++) { Console.Write(i); }
-
-            // Кординати y
-            for (int i = 0; i < 10; i++) { Console.SetCursorPosition(0 + startX, 2 + startY + i); Console.Write(i); }
-
-            // Верхняя рамка
-            Console.SetCursorPosition(1 + startX, 1 + startY);
-            Console.WriteLine("*----------*");
-
-            // Боковая рамка
-            for (int i = 0; i < 10; i++)
-            {
-                Console.SetCursorPosition(1 + startX, 2 + i + startY); Console.WriteLine("|");
-                Console.SetCursorPosition(12 + startX, 2 + i + startY); Console.WriteLine("|");
-            }
-
-            // Нижняя рамка
-            Console.SetCursorPosition(1 + startX, 12 + startY);
-            Console.WriteLine("*----------*");
-
+            //Нарисовать рамку поля
+            DrawBattleFrame(startX, startY);
         }
+
         //Рисуем наши попадания и вибитие кораблики bota
         public void DrawField(BattleField bot, int startX, int startY)
         {
+            //Записать данние в матрицу
             AddFullOnEnemyMatrix(bot);
 
-
+            //Нарисовать корабли
             for (int x = 0; x < SizeX; x++)
             {
                 for (int y = 0; y < SizeY; y++)
@@ -189,36 +169,11 @@ namespace SeaBattle
                 }
             }
 
-
-
-            Console.ResetColor();
-            // Кординати x
-            Console.SetCursorPosition(0 + startX, 0 + startY);
-            Console.Write("  ");
-            for (int i = 0; i < 10; i++) { Console.Write(i); }
-
-            // Кординати y
-            for (int i = 0; i < 10; i++) { Console.SetCursorPosition(0 + startX, 2 + startY + i); Console.Write(i); }
-
-
-            // Верхняя рамка
-            Console.SetCursorPosition(1 + startX, 1 + startY);
-            Console.WriteLine("*----------*");
-
-            // Боковая рамка
-            for (int i = 0; i < 10; i++)
-            {
-                Console.SetCursorPosition(1 + startX, 2 + i + startY); Console.WriteLine("|");
-                Console.SetCursorPosition(12 + startX, 2 + i + startY); Console.WriteLine("|");
-            }
-
-            // Нижняя рамка
-            Console.SetCursorPosition(1 + startX, 12 + startY);
-            Console.WriteLine("*----------*");
-
+            //Нарисовать рамку поля
+            DrawBattleFrame(startX, startY);
         }
 
-        //For debugging draw their alieu ships
+        //Draw Alieu ships
         public void DrawShips(int startX, int startY)
         {
 
@@ -235,37 +190,15 @@ namespace SeaBattle
             }
 
 
-            Console.ResetColor();
-            // Кординати x
-            Console.SetCursorPosition(0 + startX, 0 + startY);
-            Console.Write("  ");
-            for (int i = 0; i < 10; i++) { Console.Write(i); }
-
-            // Кординати y
-            for (int i = 0; i < 10; i++) { Console.SetCursorPosition(0 + startX, 2 + startY + i); Console.Write(i); }
-
-            // Верхняя рамка
-            Console.SetCursorPosition(1 + startX, 1 + startY);
-            Console.WriteLine("*----------*");
-
-            // Боковая рамка
-            for (int i = 0; i < 10; i++)
-            {
-                Console.SetCursorPosition(1 + startX, 2 + i + startY); Console.WriteLine("|");
-                Console.SetCursorPosition(12 + startX, 2 + i + startY); Console.WriteLine("|");
-            }
-
-            // Нижняя рамка
-            Console.SetCursorPosition(1 + startX, 12 + startY);
-            Console.WriteLine("*----------*");
-
+            //Нарисовать рамку поля
+            DrawBattleFrame(startX, startY);
         }
 
 
 
 
         //Bot shoots another bot
-        public bool ShotBot(BattleField bot , int freezeTime)
+        public bool ShotBot(BattleField bot, int freezeTime)
         {
 
             System.Threading.Thread.Sleep(freezeTime);
@@ -378,7 +311,7 @@ namespace SeaBattle
 
                 return true;
             }
-            else if(botStates == (int)eBotShots.destruction)
+            else if (botStates == (int)eBotShots.destruction)
             {
                 int randomCount = 0;
 
@@ -429,7 +362,7 @@ namespace SeaBattle
                     aI.firstShotX = tempX;
                     aI.firstShotY = tempY;
                 }
-                else 
+                else
                 {
                     botStates = (int)eBotShots.missed;
                     return false;
@@ -536,7 +469,6 @@ namespace SeaBattle
 
                     // Вистрел
                     int currentShip = 0;
-
                     if (HitCheck(bot, tempX, tempY, ref currentShip))
                     {
                         // проверка или живой корабль
@@ -669,6 +601,7 @@ namespace SeaBattle
                     // Вистрел
                     int currentShip = 0;
 
+                    //Проверка на попадания
                     if (HitCheck(bot, tempX, tempY, ref currentShip))
                     {
                         // проверка или живой корабль
@@ -698,12 +631,12 @@ namespace SeaBattle
                             return true;
                         }
                     }
-                    else { aI.invalidDirection.Add(aI.direction); }
-
-
-                    botStates = (int)eBotShots.hit;
-                    return false;
-
+                    else
+                    {
+                        aI.invalidDirection.Add(aI.direction);
+                        botStates = (int)eBotShots.hit;
+                        return false;
+                    }
                 }
             }
 
@@ -712,6 +645,7 @@ namespace SeaBattle
             botStates = (int)eBotShots.missed;
             return false;
         }
+
         // MAN shoots check eOptionShots
         public int ShotMan(BattleField bot, int x, int y)
         {
@@ -1087,6 +1021,39 @@ namespace SeaBattle
             }
         }
 
+
+        //Рисует рамку поля
+        private void DrawBattleFrame(int startX, int startY)
+        {
+            Console.ResetColor();
+
+
+            // Кординати x
+            Console.SetCursorPosition(0 + startX, 0 + startY);
+            Console.Write("  ");
+            for (int i = 0; i < 10; i++) { Console.Write(i); }
+
+            // Кординати y
+            for (int i = 0; i < 10; i++) { Console.SetCursorPosition(0 + startX, 2 + startY + i); Console.Write(i); }
+
+            // Верхняя рамка
+            Console.SetCursorPosition(1 + startX, 1 + startY);
+            Console.WriteLine("*----------*");
+
+            // Боковая рамка
+            for (int i = 0; i < 10; i++)
+            {
+                Console.SetCursorPosition(1 + startX, 2 + i + startY); Console.WriteLine("|");
+                Console.SetCursorPosition(12 + startX, 2 + i + startY); Console.WriteLine("|");
+            }
+
+            // Нижняя рамка
+            Console.SetCursorPosition(1 + startX, 12 + startY);
+            Console.WriteLine("*----------*");
+
+
+            Console.ResetColor();
+        }
     }
 }
 

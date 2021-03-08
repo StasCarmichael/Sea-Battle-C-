@@ -18,7 +18,7 @@ namespace SeaBattle
             Console.SetBufferSize(120, 60);
 
             //Установка задержки
-            const int FREEZETIME = 1000;
+            const int FREEZETIME = 500;
 
 
         //goto
@@ -305,7 +305,7 @@ namespace SeaBattle
                                 player.Draw(bot, 5, 8);
                                 player.DrawField(bot, 35, 8);
                             }
-                            
+
 
                         }
 
